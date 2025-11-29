@@ -8,42 +8,59 @@ import TitleReveal from "@/components/TitleReveal";
 import CircularScore from "@/components/CircularScore";
 import { startRecording } from "../../../utils/recorder.js";
 import Recorder from "@/components/Recorder.jsx";
+import Metrics from "@/components/Metrics.jsx";
 
 export default function Home() {
     const [speaking, setSpeaking] = useState(false);
     const [analysed, setAnalysed] = useState(true);
     const recorderRef = useRef(null); // to keep track of the recorder instance
+    const [recording, setRecording] = useState(false);
+    const [result, setResult] = useState(null);
     const improvements = [
-        "Speak more slowly to improve clarity",
-        "Reduce filler words like 'um' and 'uh'",
-        "Maintain consistent volume throughout",
-        "Add more pauses between sentences",
-        "Vary your tone to sound more engaging"
-    ];
+        "Work on varying your pitch to make your speech more engaging.",
+        "Practice pausing at key points to emphasize important information.",]
+    const mediaRecorderRef = useRef(null);
+    const chunksRef = useRef([]);
+    async function startRecording() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
+        const mediaRecorder = new MediaRecorder(stream, {
+            mimeType: "audio/webm",
+        });
 
-    const handleButtonClick = async () => {
-        if (!speaking) {
-            // Start recording
-            recorderRef.current = await startRecording();
-            setSpeaking(true);
-        } else {
-            // Stop recording
-            const audioBlob = await recorderRef.current.stop();
-            setSpeaking(false);
-            recorderRef.current = null;
+        mediaRecorderRef.current = mediaRecorder;
+        chunksRef.current = [];
 
-            // Optional: download the recording
-            const url = URL.createObjectURL(audioBlob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "user_audio.wav";
-            document.body.appendChild(a);
-            a.click();
-            URL.revokeObjectURL(url);
+        mediaRecorder.ondataavailable = (e) => {
+            chunksRef.current.push(e.data);
+        };
 
-            // TODO: send audioBlob to backend / ElevenLabs
-        }
+        mediaRecorder.onstop = async () => {
+            const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+
+            const file = new File([blob], "recording.webm", {
+                type: "audio/webm",
+            });
+
+            const form = new FormData();
+            form.append("audio", file);
+
+            const res = await fetch("/api/analyze", {
+                method: "POST",
+                body: form,
+            });
+
+            const json = await res.json();
+            setResult(json);
+        };
+
+        mediaRecorder.start();
+        setRecording(true);
+    }
+
+    function stopRecording() {
+        mediaRecorderRef.current?.stop();
+        setRecording(false);
     }
 
     return (
@@ -51,35 +68,43 @@ export default function Home() {
             <HeroHeader></HeroHeader>
             <div className="flex flex-col items-center mt-40 space-y-15 w-fit mx-auto">
                 <TitleReveal className={"text-4xl "} text={"Your turn to talk."}></TitleReveal>
-                <WaveformVisualizer isActive={speaking}></WaveformVisualizer>
-                <Recorder></Recorder>
-                {speaking ? <Button onClick={handleButtonClick} asChild size="lg" className="rounded-xl w-fit px-5 hover:cursor-pointer text-base bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700">
+                <WaveformVisualizer isActive={recording}></WaveformVisualizer>
+                {recording ? <Button onClick={stopRecording} asChild size="lg" className="rounded-xl w-fit px-5 hover:cursor-pointer text-base bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700">
                     <span className="text-nowrap">Stop Speaking</span>
-                </Button> : <Button onClick={handleButtonClick} asChild size="lg" className="rounded-xl w-fit px-5 text-base hover:cursor-pointer">
+                </Button> : <Button onClick={startRecording} asChild size="lg" className="rounded-xl w-fit px-5 text-base hover:cursor-pointer">
                     <span className="text-nowrap">Start Speaking</span>
                 </Button>}
+
             </div>
             <div className="rounded-2xl mx-auto mt-20 p-10 bg-slate-100 w-fit">
-                {analysed ? (
+                {result ? (
                     <div className="flex flex-col items-center space-y-10">
                         <TitleReveal className={'text-4xl'} text={"Scores"}></TitleReveal>
                         <div className="flex flex-row space-x-14">
                             <div className="flex flex-col space-y-4 items-center">
                                 <h1>Fluency</h1>
-                                <CircularScore score={8}></CircularScore>
+                                <CircularScore score={result.analysis.fluency}></CircularScore>
                             </div>
                             <div className="flex flex-col space-y-4 items-center">
                                 <h1>Clarity</h1>
-                                <CircularScore score={4}></CircularScore>
+                                <CircularScore score={result.analysis.clarity}></CircularScore>
                             </div>
                             <div className="flex flex-col space-y-4 items-center">
                                 <h1>Confidence</h1>
-                                <CircularScore score={2}></CircularScore>
+                                <CircularScore score={result.analysis.confidence}></CircularScore>
                             </div>
                             <div className="flex flex-col space-y-4 items-center">
                                 <h1>Pacing</h1>
-                                <CircularScore score={9}></CircularScore>
+                                <CircularScore score={result.analysis.pacing}></CircularScore>
                             </div>
+                            <div className="flex flex-col space-y-4 items-center">
+                                <h1>Structure</h1>
+                                <CircularScore score={result.analysis.structure}></CircularScore>
+                            </div>
+                        </div>
+                        <div className="flex flex-col space-y-4 items-center">
+                            <h1 className="font-semibold text-2xl">Overall Score</h1>
+                            <CircularScore size={200} score={result.analysis.overall_rating}></CircularScore>
                         </div>
                     </div>
                 ) : (
@@ -89,17 +114,31 @@ export default function Home() {
                     </div>
                 )}
             </div>
-            <div className="rounded-2xl mx-auto my-10 p-10 bg-slate-100 w-fit">
-                <TitleReveal className={'text-4xl'} text={"Improvements"}></TitleReveal>
-                <ul className="space-y-3 pt-5">
-                    {improvements.map((improvement, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                            <span className="text-blue-500 mt-1">•</span>
-                            <span>{improvement}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+
+            {result && result.analysis && result.analysis.improvements && Array.isArray(result.analysis.improvements) && (
+                <Metrics
+                    fillerWordCount={result.analysis.pauses?.length || 0}
+                    tone={result.analysis.tone}
+                ></Metrics>
+            )}
+
+            {result && result.analysis && (
+                <div className="rounded-2xl mx-auto my-10 p-10 bg-slate-100 w-fit">
+                    <TitleReveal className={'text-4xl'} text={"Improvements"}></TitleReveal>
+                    {result.analysis.improvements && Array.isArray(result.analysis.improvements) && result.analysis.improvements.length > 0 ? (
+                        <ul className="space-y-3 pt-5">
+                            {result.analysis.improvements.map((improvement, index) => (
+                                <li key={index} className="flex items-start gap-3">
+                                    <span className="text-blue-500 mt-1">•</span>
+                                    <span>{typeof improvement === 'string' ? improvement : improvement?.text || ''}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-center text-gray-500 text-lg pt-5">No improvements needed!</p>
+                    )}
+                </div>
+            )}
         </div>
     )
 }

@@ -8,7 +8,7 @@ async function wait(ms) {
 
 export async function analyzeTranscript(transcript, words) {
   const prompt = `
-You are a speech coach. Analyze the transcript and timestamps, give 5 detailed improvements. For the scores make sure to be very critical and harsh, so that good speeches and bad speeches have a distinctive difference in scores.
+You are a speech coach. Analyze the transcript and timestamps, give 5 detailed improvements as strings in an array, e.g. ["Speak faster","Speak gently"... 3 more suggestions]. For the scores make sure to be very critical and harsh, so that good speeches and bad speeches have a distinctive difference in scores.
 
 Return ONLY JSON and don't return any other text or markup or characters, only JSON plaintext.:
 {

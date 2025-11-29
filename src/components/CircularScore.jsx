@@ -13,6 +13,10 @@ export default function CircularScore({ score = 0, size = 120, strokeWidth = 8 }
     const circumference = 2 * Math.PI * radius;
     const progress = (displayScore / 10) * circumference;
 
+    // Calculate font sizes based on size prop
+    const scoreFontSize = size * 0.25; // 25% of circle size
+    const labelFontSize = size * 0.12; // 12% of circle size
+
     // Intersection Observer to trigger animation on scroll
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -105,10 +109,12 @@ export default function CircularScore({ score = 0, size = 120, strokeWidth = 8 }
 
             {/* Score text in the center */}
             <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold" style={{ color }}>
+                <span className="font-bold" style={{ color, fontSize: `${scoreFontSize}px` }}>
                     {displayScore.toFixed(1)}
                 </span>
-                <span className="text-sm text-gray-500">/ 10</span>
+                <span className="text-gray-500" style={{ fontSize: `${labelFontSize}px` }}>
+                    / 10
+                </span>
             </div>
         </div>
     );

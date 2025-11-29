@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { Button } from "./ui/button";
 
 export default function Recorder() {
   const [recording, setRecording] = useState(false);
@@ -53,12 +54,11 @@ export default function Recorder() {
 
   return (
     <div>
-      {!recording && (
-        <button onClick={startRecording}>Start Recording</button>
-      )}
-      {recording && (
-        <button onClick={stopRecording}>Stop Recording</button>
-      )}
+      {recording ? <Button onClick={stopRecording} asChild size="lg" className="rounded-xl w-fit px-5 hover:cursor-pointer text-base bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700">
+        <span className="text-nowrap">Stop Speaking</span>
+      </Button> : <Button onClick={startRecording} asChild size="lg" className="rounded-xl w-fit px-5 text-base hover:cursor-pointer">
+        <span className="text-nowrap">Start Speaking</span>
+      </Button>}
 
       <pre>{result ? JSON.stringify(result, null, 2) : ""}</pre>
     </div>
