@@ -5,9 +5,18 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import WaveformVisualizer from "@/components/WaveformVisualizer";
 import TitleReveal from "@/components/TitleReveal";
+import CircularScore from "@/components/CircularScore";
 
 export default function Home() {
     const [speaking, setSpeaking] = useState(false);
+    const [analysed, setAnalysed] = useState(true);
+    const improvements = [
+        "Speak more slowly to improve clarity",
+        "Reduce filler words like 'um' and 'uh'",
+        "Maintain consistent volume throughout",
+        "Add more pauses between sentences",
+        "Vary your tone to sound more engaging"
+    ];
 
     return (
         <div className="flex flex-col">
@@ -20,6 +29,47 @@ export default function Home() {
                 </Button> : <Button onClick={() => setSpeaking(!speaking)} asChild size="lg" className="rounded-xl w-fit px-5 text-base hover:cursor-pointer">
                     <span className="text-nowrap">Start Speaking</span>
                 </Button>}
+            </div>
+            <div className="rounded-2xl mx-auto mt-20 p-10 bg-slate-100 w-fit">
+                {analysed ? (
+                    <div className="flex flex-col items-center space-y-10">
+                        <TitleReveal className={'text-4xl'} text={"Scores"}></TitleReveal>
+                        <div className="flex flex-row space-x-14">
+                            <div className="flex flex-col space-y-4 items-center">
+                                <h1>Fluency</h1>
+                                <CircularScore score={8}></CircularScore>
+                            </div>
+                            <div className="flex flex-col space-y-4 items-center">
+                                <h1>Clarity</h1>
+                                <CircularScore score={4}></CircularScore>
+                            </div>
+                            <div className="flex flex-col space-y-4 items-center">
+                                <h1>Confidence</h1>
+                                <CircularScore score={2}></CircularScore>
+                            </div>
+                            <div className="flex flex-col space-y-4 items-center">
+                                <h1>Pacing</h1>
+                                <CircularScore score={9}></CircularScore>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <TitleReveal className={'text-4xl mb-4'} text={"Scores And Improvements"}></TitleReveal>
+                        <p className="text-center text-gray-500 text-lg">Start speaking to get scores.</p>
+                    </div>
+                )}
+            </div>
+            <div className="rounded-2xl mx-auto my-10 p-10 bg-slate-100 w-fit">
+                <TitleReveal className={'text-4xl'} text={"Improvements"}></TitleReveal>
+                <ul className="space-y-3 pt-5">
+                    {improvements.map((improvement, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                            <span className="text-blue-500 mt-1">•</span>
+                            <span>{improvement}</span>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     )
