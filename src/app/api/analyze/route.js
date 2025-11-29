@@ -1,4 +1,5 @@
-import FormData from "form-data";
+const formData = new FormData();
+formData.append("file", audioBlob, "audio.wav");
 import fetch from "node-fetch";
 import { analyzeTranscript } from "../../analysis.js";
 import { improveSpeech } from "../../improveSpeech.js";
