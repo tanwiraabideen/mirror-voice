@@ -1,6 +1,6 @@
 export default function WaveformVisualizer({ isActive = false }) {
     return (
-        <div className="bg-slate-400/50 rounded-xl p-6 w-full h-32 flex items-center justify-center overflow-hidden">
+        <div className="bg-slate-100 rounded-xl p-6 w-full h-32 flex items-center justify-center overflow-hidden">
             <div className="flex items-center gap-[2px] h-full">
                 {[...Array(60)].map((_, i) => (
                     <div

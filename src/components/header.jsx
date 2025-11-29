@@ -33,7 +33,7 @@ export const HeroHeader = () => {
                         className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
                         <div className="flex w-full justify-between lg:w-auto">
                             <Link href="/" aria-label="home" className="flex items-center space-x-2">
-                                <Image src={mirrorVoiceLogo} width={100} height={100}></Image>
+                                <Image alt='logo' src={mirrorVoiceLogo} width={100} height={100}></Image>
                             </Link>
 
                             <button
