@@ -1,6 +1,7 @@
 import FormData from "form-data";
 import fetch from "node-fetch";
 import { analyzeTranscript } from "../../analysis.js";
+import { improveSpeech } from "../../improveSpeech.js";
 
 export const runtime = "nodejs";
 
@@ -76,8 +77,9 @@ export async function POST(req) {
   const words = stt.words || [];
 
   const analysis = await analyzeTranscript(transcript, words);
+  const improved = await improveSpeech(transcript, analysis)
 
-  return new Response(JSON.stringify({ transcript, analysis }), {
+  return new Response(JSON.stringify({ transcript, analysis, improved }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });

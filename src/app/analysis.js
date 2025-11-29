@@ -32,12 +32,13 @@ Timestamps:
 ${JSON.stringify(words)}
 `;
 
+  const maxLLMAttempts = 5;
+
   console.log("LLM start");
 
   let completion;
-  const maxAttempts = 4;
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+  for (let attempt = 1; attempt <= maxLLMAttempts; attempt++) {
     try {
       completion = await groq.chat.completions.create({
         model: "llama-3.1-8b-instant",
@@ -47,19 +48,25 @@ ${JSON.stringify(words)}
       });
 
       console.log("LLM success");
+      
+      let raw = completion.choices[0].message.content.trim();
+      raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        console.log(`JSON parse fail attempt ${attempt}`);
+      }
+
       break;
     } catch (err) {
       console.log(`LLM error attempt ${attempt}:`, err.code || err.message);
 
-      if (attempt === maxAttempts) throw err;
+      if (attempt === maxLLMAttempts) throw err;
 
       console.log("Retrying LLM in 5s...");
       await wait(5000);
     }
   }
 
-  let raw = completion.choices[0].message.content.trim();
-  raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
-
-  return JSON.parse(raw);
 }
