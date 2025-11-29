@@ -1,8 +1,14 @@
-const formData = new FormData();
-formData.append("file", audioBlob, "audio.wav");
+if (!global.audioCache) {
+  global.audioCache = {};
+}
+
+import nodeFormData from "form-data";
+const FormData = nodeFormData;
+
 import fetch from "node-fetch";
 import { analyzeTranscript } from "../../analysis.js";
 import { improveSpeech } from "../../improveSpeech.js";
+import { generateImprovedAudio } from "../../newAudio.js";
 
 export const runtime = "nodejs";
 
@@ -78,9 +84,14 @@ export async function POST(req) {
   const words = stt.words || [];
 
   const analysis = await analyzeTranscript(transcript, words);
-  const improved = await improveSpeech(transcript, analysis)
+  const improved = await improveSpeech(transcript, analysis);
 
-  return new Response(JSON.stringify({ transcript, analysis, improved }), {
+  const audioBuffer = await generateImprovedAudio(improved);
+  const id = crypto.randomUUID();
+  global.audioCache[id] = audioBuffer;
+  const audioUrl = `/api/audio?id=${id}`;
+
+  return new Response(JSON.stringify({ transcript, analysis, improved, audioUrl }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
