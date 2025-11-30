@@ -12,7 +12,6 @@ export default function ImprovedSpeechCard({ audioUrl, transcript }) {
                         Audio
                     </h3>
                     <AudioPlayer audioUrl={audioUrl} />
-                    <AudioPlayer audioUrl={Voice.speak} />
                 </div>
 
                 {/* Transcript Section */}
