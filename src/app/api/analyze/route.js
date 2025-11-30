@@ -9,7 +9,6 @@ import fetch from "node-fetch";
 import { analyzeTranscript } from "../../analysis.js";
 import { improveSpeech } from "../../improveSpeech.js";
 import { generateImprovedAudio } from "../../newAudio.js";
-import Voice from "../../lib/voice"
 
 export const runtime = "nodejs";
 
@@ -91,10 +90,6 @@ export async function POST(req) {
   const id = crypto.randomUUID();
   global.audioCache[id] = audioBuffer;
   const audioUrl = `/api/audio?id=${id}`;
-
-  const file_test = new File([blob], 'voice.wav', { type: 'audio/wav' });
-  await Voice.createVoice("myvoice");
-  await Voice.addSample(file_test);
 
   return new Response(JSON.stringify({ transcript, analysis, improved, audioUrl }), {
     status: 200,
