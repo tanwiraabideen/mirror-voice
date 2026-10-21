@@ -1,6 +1,6 @@
 # Mirror Voice
 
-A Next.js app with voice capabilities and a built-in audio player, powered by [Groq](https://groq.com) and [Hugging Face Inference](https://huggingface.co/docs/inference-providers).
+A Next.js app aimed to help people improve their public speaking skills. Users can read out their speech, recieve scoring and recieve an improved version of their speech with the same content. Powered by [Groq](https://groq.com) and [Hugging Face Inference](https://huggingface.co/docs/inference-providers).
 
 ## Tech stack
 
